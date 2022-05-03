@@ -10,62 +10,38 @@ import android.support.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import lk.ac.mrt.cse.dbs.simpleexpensemanager.config.DBHelper;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.AccountDAO;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.exception.InvalidAccountException;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Account;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
 
-public class DBAccountDAO extends SQLiteOpenHelper implements AccountDAO {
+public class DBAccountDAO implements AccountDAO {
+
 
     private Context context;
-    private static final String DATABASE_NAME = "lab_190478E.db";
-    private static final int DATABASE_VERSION = 1;
-
-    private static final String TABLE_NAME = "account";
-    private static final String COLUMN_ID = "id";
-    private static final String COLUMN_ACC_NO = "acc_no";
-    private static final String COLUMN_BANK_NAME = "bank_name";
-    private static final String COLUMN_ACC_HOLDER = "acc_holder";
-    private static final String COLUMN_ACC_BALANCE = "balance";
 
     public DBAccountDAO(@Nullable Context context) {
-        super(context , DATABASE_NAME , null , DATABASE_VERSION);
         this.context = context;
-    }
-
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        String query = "CREATE TABLE " + TABLE_NAME +
-                " ("+ COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "+
-                COLUMN_ACC_NO + " TEXT UNIQUE, "+
-                COLUMN_BANK_NAME + " TEXT, " +
-                COLUMN_ACC_HOLDER + " TEXT, "+
-                COLUMN_ACC_BALANCE + " REAL);";
-        db.execSQL(query);
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int i, int i1) {
-        String query = "DROP TABLE IF EXISTS " + TABLE_NAME;
-
-        db.execSQL(query);
-        onCreate(db);
     }
 
     @Override
     public List<String> getAccountNumbersList() {
 
-        SQLiteDatabase DB = this.getWritableDatabase();
+        DBHelper DBH = DBHelper.getInstanceDB(context);
+
+        SQLiteDatabase DB = DBH.getWritableDatabase();
+
         ContentValues contentValues = new ContentValues();
 
-        Cursor cursor = DB.rawQuery("SELECT * FROM "+ TABLE_NAME , null);
+        Cursor cursor = DB.rawQuery("SELECT * FROM "+ DBHelper.TABLE_NAME1+";" , null);
 
         if(cursor.getCount()>0){
 
             List<String> accountsNumberList = new ArrayList<>();
 
             while (cursor.moveToNext()){
-                String acc_no = cursor.getString(cursor.getColumnIndex(COLUMN_ACC_NO));
+                String acc_no = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_ACC_NO));
 
                 accountsNumberList.add(acc_no);
 
@@ -79,20 +55,22 @@ public class DBAccountDAO extends SQLiteOpenHelper implements AccountDAO {
 
     @Override
     public List<Account> getAccountsList() {
-        SQLiteDatabase DB = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
+        DBHelper DBH = DBHelper.getInstanceDB(context);
 
-        Cursor cursor = DB.rawQuery("SELECT * FROM "+ TABLE_NAME , null);
+        SQLiteDatabase DB = DBH.getWritableDatabase();
+
+
+        Cursor cursor = DB.rawQuery("SELECT * FROM "+ DBHelper.TABLE_NAME1+";" , null);
 
         if(cursor.getCount()>0){
 
             List<Account> accounts = new ArrayList<>();
 
             while (cursor.moveToNext()){
-                String acc_no = cursor.getString(cursor.getColumnIndex(COLUMN_ACC_NO));
-                String bank_name = cursor.getString(cursor.getColumnIndex(COLUMN_BANK_NAME));
-                String acc_holder = cursor.getString(cursor.getColumnIndex(COLUMN_ACC_HOLDER));
-                double balance = cursor.getDouble(cursor.getColumnIndex(COLUMN_ACC_BALANCE));
+                String acc_no = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_ACC_NO));
+                String bank_name = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_BANK_NAME));
+                String acc_holder = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_ACC_HOLDER));
+                double balance = cursor.getDouble(cursor.getColumnIndex(DBHelper.COLUMN_ACC_BALANCE));
 
                 accounts.add(new Account(acc_no , bank_name , acc_holder , balance));
 
@@ -106,20 +84,22 @@ public class DBAccountDAO extends SQLiteOpenHelper implements AccountDAO {
 
     @Override
     public Account getAccount(String accountNo) throws InvalidAccountException {
-        SQLiteDatabase DB = this.getWritableDatabase();
+        DBHelper DBH = DBHelper.getInstanceDB(context);
+
+        SQLiteDatabase DB = DBH.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
-        Cursor cursor = DB.rawQuery("SELECT * FROM "+TABLE_NAME+" WHERE "+COLUMN_ACC_NO+" = ?" , new String[] {accountNo});
+        Cursor cursor = DB.rawQuery("SELECT * FROM "+DBHelper.TABLE_NAME1+" WHERE "+DBHelper.COLUMN_ACC_NO+" = ?"+";" , new String[] {accountNo});
 
         if(cursor.getCount()>0){
 
             Account account = null;
 
             while (cursor.moveToNext()){
-                String acc_no = cursor.getString(cursor.getColumnIndex(COLUMN_ACC_NO));
-                String bank_name = cursor.getString(cursor.getColumnIndex(COLUMN_BANK_NAME));
-                String acc_holder = cursor.getString(cursor.getColumnIndex(COLUMN_ACC_HOLDER));
-                double balance = cursor.getDouble(cursor.getColumnIndex(COLUMN_ACC_BALANCE));
+                String acc_no = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_ACC_NO));
+                String bank_name = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_BANK_NAME));
+                String acc_holder = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_ACC_HOLDER));
+                double balance = cursor.getDouble(cursor.getColumnIndex(DBHelper.COLUMN_ACC_BALANCE));
 
                 account = new Account(acc_no , bank_name , acc_holder , balance);
                 break;
@@ -133,28 +113,35 @@ public class DBAccountDAO extends SQLiteOpenHelper implements AccountDAO {
 
     @Override
     public void addAccount(Account account) {
-        SQLiteDatabase DB = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("acc_no", account.getAccountNo());
-        contentValues.put("bank_name", account.getBankName());
-        contentValues.put("acc_holder", account.getAccountHolderName());
-        contentValues.put("balance", account.getBalance());
 
-        long result = DB.insert(TABLE_NAME , null , contentValues);
+        try{
+            getAccount(account.getAccountNo());
+        } catch(InvalidAccountException e){
 
-//        if(result==-1){
-//            throw new Exception("Account Insertion Failed");
-//        }
+            DBHelper DBH = DBHelper.getInstanceDB(context);
+
+            SQLiteDatabase DB = DBH.getWritableDatabase();
+            ContentValues contentValues = new ContentValues();
+            contentValues.put("acc_no", account.getAccountNo());
+            contentValues.put("bank_name", account.getBankName());
+            contentValues.put("acc_holder", account.getAccountHolderName());
+            contentValues.put("balance", account.getBalance());
+
+            long result = DB.insert(DBHelper.TABLE_NAME1 , null , contentValues);
+        }
+
     }
 
     @Override
     public void removeAccount(String accountNo) throws InvalidAccountException {
-        SQLiteDatabase DB = this.getWritableDatabase();
+        DBHelper DBH = DBHelper.getInstanceDB(context);
 
-        Cursor cursor = DB.rawQuery("SELECT * FROM "+TABLE_NAME+" WHERE "+COLUMN_ACC_NO+" = ?" , new String[] {accountNo});
+        SQLiteDatabase DB = DBH.getWritableDatabase();
+
+        Cursor cursor = DB.rawQuery("SELECT * FROM "+DBHelper.TABLE_NAME1+" WHERE "+DBHelper.COLUMN_ACC_NO+" = ?"+";" , new String[] {accountNo});
 
         if(cursor.getCount()>0){
-            DB.delete(TABLE_NAME , "acc_no=?" , new String[]{accountNo});
+            DB.delete(DBHelper.TABLE_NAME1 , "acc_no=?" , new String[]{accountNo});
         }else {
             throw new InvalidAccountException(accountNo+" is a invalid account number.");
         }
@@ -163,15 +150,17 @@ public class DBAccountDAO extends SQLiteOpenHelper implements AccountDAO {
     @Override
     public void updateBalance(String accountNo, ExpenseType expenseType, double amount) throws InvalidAccountException {
 
-        SQLiteDatabase DB = this.getWritableDatabase();
+        DBHelper DBH = DBHelper.getInstanceDB(context);
+
+        SQLiteDatabase DB = DBH.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
 
-        Cursor cursor = DB.rawQuery("SELECT * FROM "+TABLE_NAME+" WHERE "+COLUMN_ACC_NO+" = ?" , new String[] {accountNo});
+        Cursor cursor = DB.rawQuery("SELECT * FROM "+DBHelper.TABLE_NAME1+" WHERE "+DBHelper.COLUMN_ACC_NO+" = ?"+";" , new String[] {accountNo});
 
         if(cursor.getCount()>0){
             double pre_balance = 0;
             while (cursor.moveToNext()){
-                pre_balance = cursor.getDouble(cursor.getColumnIndex(COLUMN_ACC_BALANCE));
+                pre_balance = cursor.getDouble(cursor.getColumnIndex(DBHelper.COLUMN_ACC_BALANCE));
                 break;
             }
 
@@ -186,14 +175,8 @@ public class DBAccountDAO extends SQLiteOpenHelper implements AccountDAO {
                     break;
             }
 
-            DB.beginTransaction();
-            try{
-                contentValues.put("balance" , new_balance);
-                DB.update(TABLE_NAME , contentValues , "acc_no=?" , new String[]{accountNo});
-                DB.setTransactionSuccessful();
-            } finally {
-                DB.endTransaction();
-            }
+            contentValues.put("balance" , new_balance);
+            DB.update(DBHelper.TABLE_NAME1 , contentValues , "acc_no=?" , new String[]{accountNo});
 
         }else {
             throw new InvalidAccountException(accountNo+" is a invalid account number.");

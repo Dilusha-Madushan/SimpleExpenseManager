@@ -13,88 +13,75 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import lk.ac.mrt.cse.dbs.simpleexpensemanager.config.DBHelper;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.TransactionDAO;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Account;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Transaction;
 
-public class DBTransactionDAO extends SQLiteOpenHelper implements TransactionDAO {
+public class DBTransactionDAO implements TransactionDAO {
+
 
     private Context context;
-    private static final String DATABASE_NAME = "lab_190478E.db";
-    private static final int DATABASE_VERSION = 1;
-
-    private static final String TABLE_NAME = "transaction_";
-    private static final String COLUMN_ID = "id";
-    private static final String COLUMN_ACC_NO = "acc_no";
-    private static final String COLUMN_DATE = "date";
-    private static final String COLUMN_TYPE = "expenseType";
-    private static final String COLUMN_AMOUNT = "amount";
-
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
     public DBTransactionDAO(@Nullable Context context) {
-        super(context , DATABASE_NAME , null , DATABASE_VERSION);
         this.context = context;
     }
-
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        String query = "CREATE TABLE " + TABLE_NAME +
-                " ("+ COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "+
-                COLUMN_ACC_NO + " TEXT, "+
-                COLUMN_DATE + " DATETIME, " +
-                COLUMN_TYPE + " TEXT, "+
-                COLUMN_AMOUNT + " REAL);";
-        db.execSQL(query);
-    }
-
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int i, int i1) {
-        String query = "DROP TABLE IF EXISTS " + TABLE_NAME;
-
-        db.execSQL(query);
-        onCreate(db);
-    }
+//
+//    @Override
+//    public void onCreate(SQLiteDatabase db) {
+//        String query = "CREATE TABLE " + TABLE_NAME +
+//                " ("+ COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "+
+//                COLUMN_ACC_NO + " TEXT, "+
+//                COLUMN_DATE + " DATETIME, " +
+//                COLUMN_TYPE + " TEXT, "+
+//                COLUMN_AMOUNT + " REAL);";
+//        db.execSQL(query);
+//    }
+//
+//    @Override
+//    public void onUpgrade(SQLiteDatabase db, int i, int i1) {
+//        String query = "DROP TABLE IF EXISTS " + TABLE_NAME+";";
+//
+//        db.execSQL(query);
+//        onCreate(db);
+//    }
 
     @Override
     public void logTransaction(Date date, String accountNo, ExpenseType expenseType, double amount) {
 
-        SQLiteDatabase DB = this.getWritableDatabase();
+        DBHelper DBH = DBHelper.getInstanceDB(context);
 
-        DB.beginTransaction();
-        try{
-            ContentValues contentValues = new ContentValues();
-            contentValues.put("acc_no", accountNo);
+        SQLiteDatabase DB = DBH.getWritableDatabase();
 
-            contentValues.put("date",  dateFormat.format(date));
-            contentValues.put("type", String.valueOf(expenseType));
-            contentValues.put("amount", amount);
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("acc_no", accountNo);
 
-            DB.insert(TABLE_NAME , null , contentValues);
+        contentValues.put(DBHelper.COLUMN_DATE,  dateFormat.format(date));
+        contentValues.put(DBHelper.COLUMN_TYPE, String.valueOf(expenseType));
+        contentValues.put(DBHelper.COLUMN_AMOUNT, amount);
 
-            DB.setTransactionSuccessful();
-
-        } finally {
-            DB.endTransaction();
-        }
+        DB.insert(DBHelper.TABLE_NAME2 , null , contentValues);
     }
 
     @Override
     public List<Transaction> getAllTransactionLogs() {
-        SQLiteDatabase DB = this.getWritableDatabase();
+        DBHelper DBH = DBHelper.getInstanceDB(context);
 
-        Cursor cursor = DB.rawQuery("SELECT * FROM "+ TABLE_NAME , null);
+        SQLiteDatabase DB = DBH.getWritableDatabase();
+
+        Cursor cursor = DB.rawQuery("SELECT * FROM "+ DBHelper.TABLE_NAME2+";" , null);
 
         if(cursor.getCount()>0){
 
             List<Transaction> transactions = new ArrayList<>();
 
             while (cursor.moveToNext()){
-                String acc_no = cursor.getString(cursor.getColumnIndex(COLUMN_ACC_NO));
-                String dateStr = cursor.getString(cursor.getColumnIndex(COLUMN_DATE));
-                String type = cursor.getString(cursor.getColumnIndex(COLUMN_TYPE));
-                double amount = cursor.getDouble(cursor.getColumnIndex(COLUMN_AMOUNT));
+                String acc_no = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_ACC_NO));
+                String dateStr = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_DATE));
+                String type = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_TYPE));
+                double amount = cursor.getDouble(cursor.getColumnIndex(DBHelper.COLUMN_AMOUNT));
 
                 ExpenseType expenseType = null;
 
@@ -119,25 +106,29 @@ public class DBTransactionDAO extends SQLiteOpenHelper implements TransactionDAO
 
     @Override
     public List<Transaction> getPaginatedTransactionLogs(int limit) {
-        SQLiteDatabase DB = this.getWritableDatabase();
+        DBHelper DBH = DBHelper.getInstanceDB(context);
+
+        SQLiteDatabase DB = DBH.getWritableDatabase();
 
         List<Transaction> transactions = new ArrayList<>();
 
-        Cursor cursor = DB.rawQuery("SELECT * FROM "+ TABLE_NAME+ " OFFSET "+limit+";" , null);
+        Cursor cursor = DB.rawQuery("SELECT * FROM "+ DBHelper.TABLE_NAME2+ " LIMIT "+limit+";" , null);
 
         if(cursor.getCount()>0){
 
             while (cursor.moveToNext()){
-                String acc_no = cursor.getString(cursor.getColumnIndex(COLUMN_ACC_NO));
-                String dateStr = cursor.getString(cursor.getColumnIndex(COLUMN_DATE));
-                String type = cursor.getString(cursor.getColumnIndex(COLUMN_TYPE));
-                double amount = cursor.getDouble(cursor.getColumnIndex(COLUMN_AMOUNT));
+                String acc_no = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_ACC_NO));
+                String dateStr = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_DATE));
+                String type = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_TYPE));
+                double amount = cursor.getDouble(cursor.getColumnIndex(DBHelper.COLUMN_AMOUNT));
 
-                ExpenseType expenseType = null;
+                ExpenseType expenseType = ExpenseType.valueOf(type);
 
-                if(ExpenseType.EXPENSE.name().equals(type)){
-                    expenseType = ExpenseType.EXPENSE;
-                }else expenseType = ExpenseType.INCOME;
+//                ExpenseType.valueOf()
+//
+//                if(ExpenseType.EXPENSE.name().equals(type)){
+//                    expenseType = ExpenseType.EXPENSE;
+//                }else expenseType = ExpenseType.INCOME;
 
                 try{
                     Date date = dateFormat.parse(dateStr);
@@ -150,15 +141,15 @@ public class DBTransactionDAO extends SQLiteOpenHelper implements TransactionDAO
             return transactions;
 
         }else {
-            cursor = DB.rawQuery("SELECT * FROM "+ TABLE_NAME , null);
+            cursor = DB.rawQuery("SELECT * FROM "+ DBHelper.TABLE_NAME2+";" , null);
 
             if(cursor.getCount()>0){
 
                 while (cursor.moveToNext()){
-                    String acc_no = cursor.getString(cursor.getColumnIndex(COLUMN_ACC_NO));
-                    String dateStr = cursor.getString(cursor.getColumnIndex(COLUMN_DATE));
-                    String type = cursor.getString(cursor.getColumnIndex(COLUMN_TYPE));
-                    double amount = cursor.getDouble(cursor.getColumnIndex(COLUMN_AMOUNT));
+                    String acc_no = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_ACC_NO));
+                    String dateStr = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_DATE));
+                    String type = cursor.getString(cursor.getColumnIndex(DBHelper.COLUMN_TYPE));
+                    double amount = cursor.getDouble(cursor.getColumnIndex(DBHelper.COLUMN_AMOUNT));
 
                     ExpenseType expenseType = null;
 
