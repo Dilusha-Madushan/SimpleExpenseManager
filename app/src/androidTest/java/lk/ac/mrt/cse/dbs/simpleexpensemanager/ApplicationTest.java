@@ -60,7 +60,7 @@ public class ApplicationTest {
     public static void DBSetup(){
         expenseManager = new PersistentExpenseManager(ApplicationProvider.getApplicationContext());
 
-        double balance = 1000;
+        double balance = 2000;
 
         expenseManager.addAccount(accountNo , bankName , accountHolderName , balance);
     }
