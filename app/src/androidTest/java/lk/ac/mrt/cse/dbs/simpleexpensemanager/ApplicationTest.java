@@ -106,6 +106,7 @@ public class ApplicationTest {
         assertTrue(transactions.size()>transactionsOldSize);
     }
 
+
     @Test
     public void addTransactionTest2() throws InvalidAccountException {
         int day = 1;
@@ -130,4 +131,5 @@ public class ApplicationTest {
         });
 
     }
+
 }
