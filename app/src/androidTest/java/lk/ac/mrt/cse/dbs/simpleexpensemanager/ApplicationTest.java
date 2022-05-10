@@ -50,19 +50,21 @@ public class ApplicationTest {
 
     private ExpenseManager expenseManager;
 
+    private String accountNo = "12345";
+    private String bankName = "ABC";
+    private String accountHolderName = "David";
+
     @Before
     public void DBSetup(){
         expenseManager = new PersistentExpenseManager(ApplicationProvider.getApplicationContext());
+
+        double balance = 1000;
+
+        expenseManager.addAccount(accountNo , bankName , accountHolderName , balance)
     }
 
     @Test
     public void addAccountTest(){
-        String accountNo = "12345";
-        String bankName = "ABC";
-        String accountHolderName = "David";
-        double balance = 1000;
-
-        expenseManager.addAccount(accountNo , bankName , accountHolderName , balance);
 
         List<String> accountNumList = expenseManager.getAccountNumbersList();
 
@@ -74,7 +76,6 @@ public class ApplicationTest {
         int day = 1;
         int month = 1;
         int year = 2022;
-        String accountNo = "12345";
         ExpenseType expenseType = ExpenseType.INCOME;
         String amount = "500";
 
