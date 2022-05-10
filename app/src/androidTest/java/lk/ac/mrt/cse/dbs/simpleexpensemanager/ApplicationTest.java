@@ -60,7 +60,7 @@ public class ApplicationTest {
 
         double balance = 1000;
 
-        expenseManager.addAccount(accountNo , bankName , accountHolderName , balance)
+        expenseManager.addAccount(accountNo , bankName , accountHolderName , balance);
     }
 
     @Test
