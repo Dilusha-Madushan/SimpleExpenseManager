@@ -83,13 +83,22 @@ public class ApplicationTest {
         calendar.set(year, month, day);
         Date transactionDate = calendar.getTime();
 
-        expenseManager.updateAccountBalance(accountNo , day , month , year , expenseType , amount);
+        int transactionsOldSize = expenseManager.getTransactionLogs().size();
 
-        Transaction testTransaction = new Transaction(transactionDate , accountNo , expenseType , Double.parseDouble(amount));
+        expenseManager.updateAccountBalance(accountNo , day , month , year , expenseType , amount);
 
         List<Transaction> transactions = expenseManager.getTransactionLogs();
 
-        assertTrue(transactions.contains(testTransaction));
+        boolean success = false;
+
+        for (Transaction transaction:transactions) {
+            if(transaction.getAccountNo().equals(accountNo) && transaction.getDate()==transactionDate && transaction.getExpenseType()==expenseType && transaction.getAmount()==Double.valueOf(amount)){
+                success = true;
+                break;
+            }
+        }
+
+        assertTrue(success && transactions.size()>transactionsOldSize);
     }
 
 //    @Test
