@@ -52,9 +52,9 @@ public class ApplicationTest {
 
     private static ExpenseManager expenseManager;
 
-    private String accountNo = "12345";
-    private String bankName = "ABC";
-    private String accountHolderName = "David";
+    private static String accountNo = "12345";
+    private static String bankName = "ABC";
+    private static String accountHolderName = "David";
 
     @BeforeClass
     public static void DBSetup(){
