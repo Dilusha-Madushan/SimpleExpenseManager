@@ -49,7 +49,7 @@ import static org.junit.Assert.assertTrue;
 
 public class ApplicationTest {
 
-    private static ExpenseManager expenseManager;
+    private ExpenseManager expenseManager;
 
     private String accountNo = "12345";
     private String bankName = "ABC";
