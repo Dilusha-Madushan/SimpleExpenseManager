@@ -50,14 +50,14 @@ import static org.junit.Assert.assertTrue;
 
 public class ApplicationTest {
 
-    private static ExpenseManager expenseManager;
+    private ExpenseManager expenseManager;
 
-    private static String accountNo = "12345";
-    private static String bankName = "ABC";
-    private static String accountHolderName = "David";
+    private String accountNo = "12345";
+    private String bankName = "ABC";
+    private String accountHolderName = "David";
 
     @BeforeClass
-    public static void DBSetup(){
+    public void DBSetup(){
         expenseManager = new PersistentExpenseManager(ApplicationProvider.getApplicationContext());
 
         double balance = 2000;
@@ -106,13 +106,12 @@ public class ApplicationTest {
         assertTrue(transactions.size()>transactionsOldSize);
     }
 
-
     @Test
     public void addTransactionTest2() throws InvalidAccountException {
         int day = 1;
         int month = 1;
         int year = 2022;
-        String accountNoFake = "22222";
+        String accountNoFake = "11111";
         ExpenseType expenseType = ExpenseType.INCOME;
         String amount = "500";
 
@@ -131,5 +130,4 @@ public class ApplicationTest {
         });
 
     }
-
 }
