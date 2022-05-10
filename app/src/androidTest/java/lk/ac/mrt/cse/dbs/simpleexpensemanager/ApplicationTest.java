@@ -40,6 +40,7 @@ import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.ExpenseType;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.data.model.Transaction;
 import lk.ac.mrt.cse.dbs.simpleexpensemanager.ui.MainActivity;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
@@ -55,7 +56,7 @@ public class ApplicationTest {
     private String bankName = "ABC";
     private String accountHolderName = "David";
 
-    @Before
+    @BeforeClass
     public void DBSetup(){
         expenseManager = new PersistentExpenseManager(ApplicationProvider.getApplicationContext());
 
@@ -105,25 +106,28 @@ public class ApplicationTest {
         assertTrue(transactions.size()>transactionsOldSize);
     }
 
-//    @Test
-//    public void addTransactionTest2() {
-//        int day = 1;
-//        int month = 1;
-//        int year = 2022;
-//        String accountNo = "11111";
-//        ExpenseType expenseType = ExpenseType.INCOME;
-//        String amount = "500";
-//
-//        List<String> accountNumList = expenseManager.getAccountNumbersList();
-//
-//        while(accountNumList.contains(accountNo)){
-//            byte[] array = new byte[5]; // length is bounded by 7
-//            new Random().nextBytes(array);
-//            accountNo = new String(array, Charset.forName("UTF-8"));
-//        }
-//
-//        String finalAccountNo = accountNo;
-//        assertThrows(InvalidAccountException.class,  expenseManager.updateAccountBalance(finalAccountNo, day , month , year , expenseType , amount));
-//
-//    }
+    @Test
+    public void addTransactionTest2() throws InvalidAccountException {
+        int day = 1;
+        int month = 1;
+        int year = 2022;
+        String accountNoFake = "11111";
+        ExpenseType expenseType = ExpenseType.INCOME;
+        String amount = "500";
+
+        List<String> accountNumList = expenseManager.getAccountNumbersList();
+
+        while(accountNumList.contains(accountNo)){
+            byte[] array = new byte[5]; // length is bounded by 7
+            new Random().nextBytes(array);
+            accountNo = new String(array, Charset.forName("UTF-8"));
+        }
+
+        String finalAccountNo = accountNo;
+
+        assertThrows(InvalidAccountException.class, () -> {
+            expenseManager.updateAccountBalance(accountNoFake , day , month , year , expenseType , amount);;
+        });
+
+    }
 }
