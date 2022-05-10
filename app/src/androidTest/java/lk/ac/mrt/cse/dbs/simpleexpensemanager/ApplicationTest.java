@@ -56,7 +56,7 @@ public class ApplicationTest {
     private String bankName = "ABC";
     private String accountHolderName = "David";
 
-    @BeforeClass
+    @Before
     public void DBSetup(){
         expenseManager = new PersistentExpenseManager(ApplicationProvider.getApplicationContext());
 
