@@ -57,7 +57,7 @@ public class ApplicationTest {
     private String accountHolderName = "David";
 
     @BeforeClass
-    public void DBSetup(){
+    public static void DBSetup(){
         expenseManager = new PersistentExpenseManager(ApplicationProvider.getApplicationContext());
 
         double balance = 1000;
