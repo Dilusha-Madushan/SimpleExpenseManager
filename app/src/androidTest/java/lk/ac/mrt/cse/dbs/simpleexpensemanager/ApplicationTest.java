@@ -98,7 +98,7 @@ public class ApplicationTest {
             }
         }
 
-        assertTrue(success && transactions.size()>transactionsOldSize);
+        assertTrue(transactions.size()>transactionsOldSize);
     }
 
 //    @Test
