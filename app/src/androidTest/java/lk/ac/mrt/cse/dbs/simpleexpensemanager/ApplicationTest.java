@@ -27,6 +27,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.nio.charset.Charset;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -91,8 +92,11 @@ public class ApplicationTest {
 
         boolean success = false;
 
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
+
         for (Transaction transaction:transactions) {
-            if(transaction.getAccountNo().equals(accountNo) && transaction.getDate()==transactionDate && transaction.getExpenseType()==expenseType && transaction.getAmount()==Double.valueOf(amount)){
+            boolean dateMatched = fmt.format(transactionDate).equals(fmt.format(transaction.getDate()));
+            if(transaction.getAccountNo().equals(accountNo) && dateMatched && transaction.getExpenseType()==expenseType && transaction.getAmount()==Double.valueOf(amount)){
                 success = true;
                 break;
             }
