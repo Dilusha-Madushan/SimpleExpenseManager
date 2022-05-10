@@ -111,7 +111,7 @@ public class ApplicationTest {
         int day = 1;
         int month = 1;
         int year = 2022;
-        String accountNoFake = "11111";
+        String accountNoFake = "22222";
         ExpenseType expenseType = ExpenseType.INCOME;
         String amount = "500";
 
